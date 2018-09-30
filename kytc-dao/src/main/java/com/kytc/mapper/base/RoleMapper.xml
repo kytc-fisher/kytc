@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.RoleDao">
+	<select id="list" parameterType="java.util.Map" resultType="com.kytc.model.base.RoleModel">
+		SELECT 
+			r.id,
+  			r.roleName,
+  			r.departmentId,
+  			r.createTime,
+  			r.lastUpdateTime,
+  			r.type, 
+  			r.sortNum,
+  			d.shortName as departmentName 
+		FROM 
+			kytc_base_role r 
+		left join
+			kytc_base_department d
+		on
+			r.departmentId = d.id
+		where 
+			1 = 1 
+			<if test="roleName!=null and roleName!=''">
+				and r.roleName like concat("%",#{roleName},"%")
+			</if>
+			<if test="departmentId!=null and departmentId!=''">
+				and r.departmentId = #{departmentId}
+			</if>
+			<if test="type!=null and type!=''">
+				and r.type = #{type}
+			</if>
+			<if test="sort!=null and sort!=''">
+				order by r.${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by r.lastUpdateTime desc
+			</if>
+		LIMIT #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			kytc_base_role 
+		where 
+			1 = 1 
+			<if test="roleName!=null and roleName!=''">
+				and roleName like concat("%",#{roleName},"%")
+			</if>
+			<if test="departmentId!=null and departmentId!=''">
+				and departmentId = #{departmentId}
+			</if>
+			<if test="type!=null and type!=''">
+				and type = #{type}
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.RoleEntity">
+		insert into kytc_base_role(
+			roleName,
+			departmentId,
+			description,
+			isDelete,
+			createTime,
+			lastUpdateTime,
+			operatorId,
+			sortNum,
+			type)
+		values(
+			#{roleName},
+			#{departmentId},
+			#{description},
+			0,
+			CURRENT_TIMESTAMP(),
+			CURRENT_TIMESTAMP(),
+			#{operatorId},
+			#{sortNum},
+			#{type})
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.RoleEntity">
+		update 
+			kytc_base_role 
+		set 
+			roleName = #{roleName},
+			departmentId = #{departmentId},
+			description = #{description},
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			operatorId = #{operatorId},
+			type = #{type},
+			sortNum = #{sortNum} 
+		where id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.RoleModel">
+		select 
+			r.id,
+  			r.roleName,
+  			r.departmentId,
+  			r.description,
+  			r.createTime,
+  			r.lastUpdateTime,
+  			r.operatorId,
+  			r.type,
+  			r.sortNum,
+  			u.realName as operatorName,
+  			d.shortName as departmentName
+		from 
+			kytc_base_role r 
+		left join
+			kytc_base_user u
+		on
+			r.operatorId = u.id 
+		left join 
+			kytc_base_department d
+		on
+			r.departmentId = d.id 
+		where 
+			r.id = #{id} 
+			and r.isDelete = 0
+			limit 1
+	</select>
+	<delete id="delete" parameterType = "com.kytc.entity.base.RoleEntity">
+		update  
+			kytc_base_role
+		set 
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			isDelete = 1 
+		where 
+			id = #{id}
+	</delete>
+	<select id="getById" parameterType="Integer" resultType="com.kytc.entity.base.RoleEntity">
+		select 
+			* 
+		from 
+			kytc_base_role 
+		where 
+			id = #{id} 
+			and isDelete = 0
+	</select>
+	<select id="getByRoleName" resultType="com.kytc.entity.base.RoleEntity">
+		select 
+			* 
+		from 
+			kytc_base_role 
+		where 
+			roleName = #{roleName}
+			and departmentId = #{departmentId} 
+			order by isDelete asc 
+			limit 1
+	</select>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.RoleEntity">
+		update 
+			kytc_base_role 
+		set 
+			roleName = #{roleName},
+			departmentId = #{departmentId},
+			description = #{description},
+			isDelete = 0,
+			createTime = CURRENT_TIMESTAMP(),
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			operatorId = #{operatorId},
+			sortNum = #{sortNum},
+			type = #{type} 
+		where 
+			id = #{id}
+	</update>
+	<select id="getRoleList" parameterType="Integer" resultType="com.kytc.model.base.RoleModel">
+		select 
+			id,
+			roleName,
+			type 
+		from 
+			kytc_base_role 
+		where 
+			departmentId = #{departmentId}
+			and isDelete = 0 
+			order by sortNum asc
+	</select>
+</mapper>

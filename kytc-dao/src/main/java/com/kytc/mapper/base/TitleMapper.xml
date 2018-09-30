@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.TitleDao">
+	<select id="list" parameterType="java.util.Map" 
+		resultType="com.kytc.model.base.TitleModel">
+		select 
+			t.id,
+			t.name,
+			t.parentId,
+			t1.name as parentName,
+			t.sortNum,
+			t.createTime,
+			t.lastUpdateTime  
+		from 
+			kytc_base_title t 
+		left join 
+			kytc_base_title t1
+		on 
+			t.parentId = t1.id 
+		where 
+			1 = 1
+			<if test="name!=null and name!=''">
+				and t.name like concat('%',#{name},'%')
+			</if>
+			<if test="parentName!=null and parentName!=''">
+				and t1.name like concat('%',#{parentName},'%')
+			</if>
+			<if test="id!=null and id!=''">
+				and t.id = #{id}
+			</if>
+			<if test="sort!=null and sort!=''">
+<!-- 				order by concat('t.',#{sort},'') ${order}  -->
+				order by t.${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by t.lastUpdateTime desc
+			</if>
+		limit #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		select 
+			count(1)
+		from 
+			kytc_base_title t 
+		left join 
+			kytc_base_title t1
+		on 
+			t.parentId = t1.id 
+		where 
+			1 = 1 
+			<if test="name!=null and name!=''">
+				and t.name like concat('%',#{name},'%')
+			</if>
+			<if test="parentName!=null and parentName!=''">
+				and t1.name like concat('%',#{parentName},'%')
+			</if>
+			<if test="id!=null and id!=''">
+				and t.id = #{id}
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.TitleEntity">
+		insert 
+			into 
+				kytc_base_title(
+				name,
+				sortNum,
+				parentId,
+				isDelete,
+				remark,
+				createTime,
+				operatorId,
+				lastUpdateTime
+			)values(
+				#{name},
+				#{sortNum},
+				#{parentId},
+				0,
+				#{remark},
+				CURRENT_TIMESTAMP(),
+				#{operatorId},
+				CURRENT_TIMESTAMP()
+			)
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.TitleEntity">
+		update 
+			kytc_base_title 
+		set 
+			name = #{name},
+			sortNum = #{sortNum},
+			parentId = #{parentId},
+			remark = #{remark},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<update id="delete" parameterType="com.kytc.entity.base.TitleEntity">
+		update 
+			kytc_base_title 
+		set 
+			isDelete = 1,
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.TitleModel">
+		select 
+			t.id,
+			t.name,
+			t.parentId,
+			t1.name as parentName,
+			t.sortNum,
+			t.createTime,
+			t.lastUpdateTime,
+			t.operatorId,
+			t.remark,  
+			u.nickName as operatorName
+		from 
+			kytc_base_title t 
+		left join 
+			kytc_base_title t1
+		on 
+			t.parentId = t1.id 
+		left join 
+			kytc_base_user u
+		on
+			t.operatorid = u.id
+		where 
+			t.id = #{id}
+		limit 1 
+	</select>
+	<select id="getByName" parameterType="String" resultType="com.kytc.entity.base.TitleEntity">
+		select 
+			t.id,
+			t.name,
+			t.parentId,
+			t.sortNum,
+			t.createTime,
+			t.lastUpdateTime,
+			t.operatorId,
+			t.isDelete 
+		from 
+			kytc_base_title t 
+		where 
+			t.name = #{name}
+		limit 1 
+	</select>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.TitleEntity">
+		update 
+			kytc_base_title 
+		set 
+			name = #{name},
+			sortNum = #{sortNum},
+			parentId = #{parentId},
+			remark = #{remark},
+			isDelete = 0,
+			operatorId = #{operatorId},
+			createTime = CURRENT_TIMESTAMP()
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id} 
+			and isDelete = 1
+	</update>
+	<select id="dropdownList" resultType="com.kytc.model.ComboboxModel">
+		select 
+			name as text,
+			id as value 
+		from 
+			kytc_base_title 
+		where 
+			isDelete = 0 
+			order by sortNum asc 
+	</select>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.UserRoleDao">
+	<insert id="add" parameterType="com.kytc.entity.base.UserRoleEntity">
+		INSERT 
+			IGNORE INTO 
+			kytc_base_user_role(
+		    	userId,
+		    	roleId
+			)VALUES(
+				#{userId},
+				#{roleId}
+			)
+	</insert>
+	<delete id="delete" parameterType="com.kytc.entity.base.UserRoleEntity">
+		delete 
+		from 
+			kytc_base_user_role 
+		where 
+			userId = #{userId} 
+			and roleId =#{roleId}
+	</delete>
+	<select id="list" parameterType="Integer" resultType="com.kytc.model.base.UserRoleModel">
+		select 
+			ur.userId,
+			ur.roleId,
+			r.roleName 
+		from 
+			kytc_base_user_role ur 
+		left join 
+			kytc_base_role r 
+		on 
+			ur.roleId = r.id
+		where 
+			ur.userId = #{userId} 
+			order by r.sortNum asc
+	</select>
+</mapper>

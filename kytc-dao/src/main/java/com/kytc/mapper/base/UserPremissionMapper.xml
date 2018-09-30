@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.UserPremissionDao">
+	<select id="list" parameterType="Integer" resultType="String">
+		SELECT 
+			premission 
+		FROM 
+			kytc_base_user_premission 
+		where 
+			userId = #{userId}
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.UserPremissionEntity">
+		insert IGNORE into kytc_base_user_premission(
+			userId,
+			premission)
+		values(
+			#{userId},
+			#{premission})
+	</insert>
+	<delete id="delete" parameterType = "com.kytc.entity.base.UserPremissionEntity">
+		delete 
+		from 
+			kytc_base_user_premission 
+		where 
+			userId = #{userId} 
+			and premission = #{premission}
+	</delete>
+	<select id="getAllUserPremissions" parameterType = "Integer" resultType="java.util.Map">
+		select 
+			t.id,
+			group_concat(t.premission) as premission 
+		from 
+			(
+				select 
+					distinct 
+					u.id as id,
+					rp.premission as premission 
+				from 
+					kytc_base_user u 
+				LEFT JOIN 
+					kytc_base_user_role ur 
+				on 
+					u.id = ur.userId 
+				LEFT JOIN 
+					kytc_base_role r 
+				on (
+					ur.roleId = r.id 
+					or (
+						r.departmentId is null 
+						and r.type =1 ) 
+					or (
+						u.departmentId = r.departmentId 
+						and r.type=1)
+					) 
+				LEFT JOIN 
+					kytc_base_role_premission rp 
+				on 
+					r.id = rp.roleId 
+ 				UNION all (
+ 					select 
+ 						p.userId as id,
+ 						p.premission as premission 
+ 					from 
+ 						kytc_base_user_premission p)) t 
+ 			GROUP BY t.id limit #{min},#{pageSize}
+	</select>
+</mapper>

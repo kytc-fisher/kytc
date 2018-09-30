@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.DictionaryTypeDao">
+	<select id="list" parameterType="java.util.Map" resultType="com.kytc.entity.base.DictionaryTypeEntity">
+		SELECT 
+			id,
+  			code,
+  			name,
+  			createTime,
+  			lastUpdateTime,
+  			sortNum 
+		FROM 
+			kytc_base_dictionary_type 
+		where 
+			1 = 1 and isDelete = 0
+			<if test="id!=null and id!=''">
+				and id = #{id}
+			</if>
+			<if test="code!=null and code!=''">
+				and code = #{code}
+			</if>
+			<if test="name!=null and name!=''">
+				and name = #{name}
+			</if>
+			<if test="sort!=null and sort!=''">
+				order by ${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by lastUpdateTime desc
+			</if>
+		LIMIT #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			kytc_base_dictionary_type 
+		where 
+			1 = 1 and isDelete = 0
+			<if test="id!=null and id!=''">
+				and id = #{id}
+			</if>
+			<if test="code!=null and code!=''">
+				and code = #{code}
+			</if>
+			<if test="name!=null and name!=''">
+				and name = #{name}
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.DictionaryTypeEntity">
+		insert into kytc_base_dictionary_type(
+			code,
+			name,
+			isDelete,
+			remark,
+			operatorId,
+			createTime,
+			lastUpdateTime,
+			sortNum)
+		values(
+			#{code},
+			#{name},
+			0,
+			#{remark},
+			#{operatorId},
+			CURRENT_TIMESTAMP(),
+			CURRENT_TIMESTAMP(),
+			#{sortNum})
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.DictionaryTypeEntity">
+		update 
+			kytc_base_dictionary_type 
+		set 
+			code = #{code},
+			name = #{name},
+			remark = #{remark},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			sortNum = #{sortNum} 
+		where id = #{id}
+	</update>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.DictionaryTypeEntity">
+		update 
+			kytc_base_dictionary_type 
+		set 
+			code = #{code},
+			name = #{name},
+			remark = #{remark},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			sortNum = #{sortNum},
+			createTime = CURRENT_TIMESTAMP(),
+			isDelete = 0 
+		where id = #{id}
+	</update>
+	<select id="getByCode" parameterType="String" resultType="com.kytc.entity.base.DictionaryTypeEntity">
+		select 
+			* 
+		from 
+			kytc_base_dictionary_type 
+		where 
+			code = #{code}
+	</select>
+	<select id="getByName" parameterType="String" resultType="com.kytc.entity.base.DictionaryTypeEntity">
+		select 
+			* 
+		from 
+			kytc_base_dictionary_type 
+		where 
+			name = #{name}
+	</select>
+	<update id="delete" parameterType = "com.kytc.entity.base.DictionaryTypeEntity">
+		update
+			kytc_base_dictionary_type 
+		set 
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			isDelete = 1,
+			operatorId = #{operatorId} 
+		where 
+			id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.DictionaryTypeModel">
+		select 
+			t.id,
+  			t.code,
+  			t.name,
+  			t.remark,
+  			t.operatorId,
+  			t.createTime,
+  			t.lastUpdateTime,
+  			t.sortNum,
+  			u.realName as operatorName 
+  		from 
+  			kytc_base_dictionary_type t
+  		left join
+  			kytc_base_user u
+  		on 
+  			t.operatorId = u.id
+  		where 
+  			t.id = #{id}
+	</select>
+	<select id="droplist" resultType="com.kytc.model.ComboboxModel">
+		select 
+  			code as value,
+  			name as text
+  		from 
+  			kytc_base_dictionary_type
+  		where 
+  			isDelete = 0 
+  			order by sortNum asc
+	</select>
+	<select id="getById" parameterType="Integer" resultType="com.kytc.entity.base.DictionaryTypeEntity">
+		select 
+  			*
+  		from 
+  			kytc_base_dictionary_type
+  		where 
+  			isDelete = 0 
+  			and id = #{id}
+  			limit 1
+	</select>
+</mapper>

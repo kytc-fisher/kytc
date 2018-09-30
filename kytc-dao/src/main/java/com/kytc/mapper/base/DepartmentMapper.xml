@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.DepartmentDao">
+	<select id="list" parameterType="java.util.Map" 
+		resultType="com.kytc.model.base.DepartmentModel">
+		select 
+			d.id,
+			d.departmentName,
+			d.shortName,
+			d.englishName,
+			d.establishTime,
+			d.sortNum,
+			d.parentId,
+			d1.departmentName as parentName,
+			d.leaderId,
+			u.realName as leaderName,
+			d.createTime,
+			d.lastUpdateTime  
+		from 
+			kytc_base_department d 
+		left join 
+			kytc_base_department d1
+		on 
+			d.parentId = d1.id 
+		left join 
+			kytc_base_user u
+		on 
+			d.leaderId = u.id 
+		where 
+			d.isDelete = 0 
+			<if test="name!=null and name!=''">
+				and (d.departmentName like concat('%',#{name},'%') 
+				or d.shortName like concat('%',#{name},'%') 
+				or d.englishName like concat('%',#{name},'%'))
+			</if>
+			<if test="leaderName!=null and leaderName!=''">
+				and u.realName like concat('%',#{leaderName},'%')
+			</if>
+			<if test="parentName!=null and parentName!=''">
+				and (d1.departmentName like concat('%',#{parentName},'%') 
+				or d1.shortName like concat('%',#{parentName},'%') 
+				or d1.englishName like concat('%',#{parentName},'%'))
+			</if>
+			<if test="sort!=null and sort!=''">
+				order by d.${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by d.lastUpdateTime desc
+			</if>
+		limit #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		select 
+			count(1) 
+		from 
+			kytc_base_department d 
+		left join 
+			kytc_base_department d1
+		on 
+			d.parentId = d1.id 
+		left join 
+			kytc_base_user u
+		on 
+			d.leaderId = u.id 
+		where 
+			d.isDelete = 0 
+			<if test="name!=null and name!=''">
+				and (d.departmentName like concat('%',#{name},'%') 
+				or d.shortName like concat('%',#{name},'%') 
+				or d.englishName like concat('%',#{name},'%'))
+			</if>
+			<if test="leaderName!=null and leaderName!=''">
+				and u.realName like concat('%',#{leaderName},'%')
+			</if>
+			<if test="parentName!=null and parentName!=''">
+				and (d1.departmentName like concat('%',#{parentName},'%') 
+				or d1.shortName like concat('%',#{parentName},'%') 
+				or d1.englishName like concat('%',#{parentName},'%'))
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.DepartmentEntity">
+		insert 
+			into 
+				kytc_base_department(
+				departmentName,
+				shortName,
+				englishName,
+				isDelete,
+				description,
+				establishTime,
+				parentId,
+				leaderId,
+				sortNum,
+				createTime,
+				operatorId,
+				lastUpdateTime
+			)values(
+				#{departmentName},
+				#{shortName},
+				#{englishName},
+				0,
+				#{description},
+				#{establishTime},
+				#{parentId},
+				#{leaderId},
+				#{sortNum},
+				CURRENT_TIMESTAMP(),
+				#{operatorId},
+				CURRENT_TIMESTAMP()
+			)
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.DepartmentEntity">
+		update 
+			kytc_base_department 
+		set 
+			departmentName = #{departmentName},
+			shortName = #{shortName},
+			englishName = #{englishName},
+			description = #{description},
+			establishTime = #{establishTime},
+			parentId = #{parentId},
+			leaderId = #{leaderId},
+			sortNum = #{sortNum},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<update id="delete" parameterType="com.kytc.entity.base.DepartmentEntity">
+		update 
+			kytc_base_department 
+		set 
+			isDelete = 1,
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.DepartmentModel">
+		select 
+			d.id,
+			d.departmentName,
+			d.shortName,
+			d.englishName,
+			d.establishTime,
+			d.sortNum,
+			d.parentId,
+			d.description,
+			d1.departmentName as parentName,
+			d.leaderId,
+			u.realName as leaderName,
+			d.createTime,
+			d.lastUpdateTime,
+			d.operatorId,
+			u1.realName as operatorName  
+		from 
+			kytc_base_department d 
+		left join 
+			kytc_base_department d1
+		on 
+			d.parentId = d1.id 
+		left join 
+			kytc_base_user u
+		on 
+			d.leaderId = u.id 
+		left join 
+			kytc_base_user u1
+		on 
+			d.operatorId = u1.id 
+		where 
+			d.isDelete = 0 
+			and d.id = #{id}
+		limit 1
+	</select>
+	<select id="getByName" parameterType="String" resultType="com.kytc.entity.base.DepartmentEntity">
+		select 
+			d.* 
+		from 
+			kytc_base_department d 
+		where 
+			d.departmentName = #{departmentName}
+		limit 1 
+	</select>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.DepartmentEntity">
+		update 
+			kytc_base_department  
+		set 
+			departmentName = #{departmentName},
+			shortName = #{shortName},
+			englishName = #{englishName},
+			establishTime = #{establishTime},
+			leaderId = #{leaderId},
+			description = #{description},
+			sortNum = #{sortNum},
+			parentId = #{parentId},
+			isDelete = 0,
+			operatorId = #{operatorId},
+			createTime = CURRENT_TIMESTAMP()
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id} 
+			and isDelete = 1
+	</update>
+	<select id="dropdownList" resultType="com.kytc.model.ComboboxModel">
+		select 
+			shortName as text,
+			id as value 
+		from 
+			kytc_base_department 
+		where 
+			isDelete = 0 
+			order by sortNum asc 
+	</select>
+</mapper>

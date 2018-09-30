@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.PremissionDao">
+	<select id="list" parameterType="java.util.Map" 
+		resultType="com.kytc.model.base.PremissionModel">
+		select 
+			p.id,
+  			p.project,
+  			p.module,
+  			p.menu,
+  			p.operator,
+  			p.premission,
+  			p.createTime,
+  			p.lastUpdateTime,
+  			dPr.name as projectName,
+  			dMo.name as moduleName,
+  			dMe.name as menuName,
+  			dOp.name as operateName
+		from 
+			kytc_base_premission p 
+		left join 
+			kytc_base_dictionary dPr
+		on
+			p.project = dPr.code 
+			and dPr.type = 'KYTC_PROJECT' 
+		left join 
+			kytc_base_dictionary dMo
+		on
+			p.module = dMo.code 
+			and dMo.type = 'KYTC_MODULE' 
+		left join 
+			kytc_base_dictionary dMe
+		on
+			p.menu = dMe.code 
+			and dMe.type = 'KYTC_MENU' 
+		left join 
+			kytc_base_dictionary dOp
+		on
+			p.operator = dOp.code 
+			and dOp.type = 'KYTC_OPERATOR' 
+		where 
+			p.isDelete = 0 
+			<if test="project!=null and project!=''">
+				and p.project = #{project}
+			</if>
+			<if test="module!=null and module!=''">
+				and p.module = #{module}
+			</if>
+			<if test="menu!=null and menu!=''">
+				and p.menu = #{menu}
+			</if>
+			<if test="operator!=null and operator!=''">
+				and p.operator = #{operator}
+			</if>
+			<if test="premission!=null and premission!=''">
+				and p.premission = #{premission}
+			</if>
+			<if test="id!=null and id!=''">
+				and p.id = #{id}
+			</if>
+			<if test="sort!=null and sort!=''">
+				order by p.${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by p.lastUpdateTime desc
+			</if>
+		limit #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		select 
+			count(1) 
+		from 
+			kytc_base_premission 
+		where 
+			isDelete = 0 
+			<if test="project!=null and project!=''">
+				and project = #{project}
+			</if>
+			<if test="module!=null and module!=''">
+				and module = #{module}
+			</if>
+			<if test="menu!=null and menu!=''">
+				and menu = #{menu}
+			</if>
+			<if test="premission!=null and premission!=''">
+				and premission = #{premission}
+			</if>
+			<if test="id!=null and id!=''">
+				and id = #{id}
+			</if>
+			<if test="operator!=null and operator!=''">
+				and operator = #{operator}
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.PremissionEntity">
+		insert 
+			into 
+				kytc_base_premission(
+				project,
+				module,
+				menu,
+				operator,
+				premission,
+				description,
+				isDelete,
+				createTime,
+				operatorId,
+				lastUpdateTime
+			)values(
+				#{project},
+				#{module},
+				#{menu},
+				#{operator},
+				#{premission},
+				#{description},
+				0,
+				CURRENT_TIMESTAMP(),
+				#{operatorId},
+				CURRENT_TIMESTAMP()
+			)
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.PremissionEntity">
+		update 
+			kytc_base_premission 
+		set 
+			project = #{project},
+			module = #{module},
+			menu = #{menu},
+			operator = #{operator},
+			premission = #{premission},
+			description = #{description},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<update id="delete" parameterType="com.kytc.entity.base.PremissionEntity">
+		update 
+			kytc_base_premission 
+		set 
+			isDelete = 1,
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.PremissionModel">
+		select 
+			p.id,
+			p.project,
+			p.module,
+			p.menu,
+			p.operator,
+			p.premission,
+			p.description,
+			p.isDelete,
+			p.createTime,
+			p.operatorId,
+			p.lastUpdateTime,
+			u.realName as operatorName, 
+			dPr.name as projectName,
+  			dMo.name as moduleName,
+  			dMe.name as menuName,
+  			dOp.name as operateName
+		from 
+			kytc_base_premission p 
+		left join 
+			kytc_base_user u
+		on 
+			p.operatorId = u.id 
+		left join 
+			kytc_base_dictionary dPr
+		on
+			p.project = dPr.code 
+			and dPr.type = 'KYTC_PROJECT' 
+		left join 
+			kytc_base_dictionary dMo
+		on
+			p.module = dMo.code 
+			and dMo.type = 'KYTC_MODULE' 
+		left join 
+			kytc_base_dictionary dMe
+		on
+			p.menu = dMe.code 
+			and dMe.type = 'KYTC_MENU' 
+		left join 
+			kytc_base_dictionary dOp
+		on
+			p.operator = dOp.code 
+			and dOp.type = 'KYTC_OPERATOR' 
+		where 
+			p.isDelete = 0 
+			and p.id = #{id}
+		limit 1
+	</select>
+	<select id="getById" parameterType="Integer" resultType="com.kytc.entity.base.PremissionEntity">
+		select 
+			* 
+		from 
+			kytc_base_premission 
+		where 
+			id = #{id}
+		limit 1 
+	</select>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.PremissionEntity">
+		update 
+			kytc_base_premission  
+		set 
+			project = #{project},
+			module = #{module},
+			menu = #{menu},
+			operator = #{operator},
+			premission = #{premission},
+			description = #{description},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP(), 
+			isDelete = 0,
+			createTime = CURRENT_TIMESTAMP()
+		where 
+			id = #{id} 
+			and isDelete = 1
+	</update>
+	<select id="getByPremission" parameterType="String" resultType="com.kytc.entity.base.PremissionEntity">
+		select 
+			* 
+		from 
+			kytc_base_premission 
+		where 
+			premission = #{premission} 
+			order by isDelete asc 
+			limit 1
+	</select>
+	<select id="getByParams" parameterType="String" resultType="com.kytc.entity.base.PremissionEntity">
+		select 
+			* 
+		from 
+			kytc_base_premission 
+		where 
+			project = #{project} 
+			and module = #{module} 
+			and menu = #{menu} 
+			and operator = #{operator} 
+			order by isDelete asc 
+			limit 1 
+	</select>
+	<select id="getPremissions" resultType="com.kytc.model.base.PremissionModel">
+		select 
+  			p.project,
+  			p.module,
+  			p.menu,
+  			p.operator,
+  			p.premission,
+  			dPr.name as projectName,
+  			dMo.name as moduleName,
+  			dMe.name as menuName,
+  			dOp.name as operateName
+		from 
+			kytc_base_premission p 
+		left join 
+			kytc_base_dictionary dPr
+		on
+			p.project = dPr.code 
+			and dPr.type = 'KYTC_PROJECT' 
+		left join 
+			kytc_base_dictionary dMo
+		on
+			p.module = dMo.code 
+			and dMo.type = 'KYTC_MODULE' 
+		left join 
+			kytc_base_dictionary dMe
+		on
+			p.menu = dMe.code 
+			and dMe.type = 'KYTC_MENU' 
+		left join 
+			kytc_base_dictionary dOp
+		on
+			p.operator = dOp.code 
+			and dOp.type = 'KYTC_OPERATOR' 
+		where 
+			p.isDelete = 0 
+			ORDER BY 
+				dPr.sortNum ASC,
+				dMo.sortNum ASC,
+				dMe.sortNum ASC,
+				dOp.sortNum ASC
+	</select>
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.RolePremissionDao">
+	<insert id="add" parameterType="com.kytc.entity.base.RolePremissionEntity">
+		insert IGNORE into kytc_base_role_premission(
+			roleId,
+			premission)
+		values(
+			#{roleId},
+			#{premission})
+	</insert>
+	<delete id="delete" parameterType="com.kytc.entity.base.RolePremissionEntity">
+		delete 
+		from 
+			kytc_base_role_premission 
+		where 
+			roleId = #{roleId} 
+			and premission = #{premission}
+	</delete>
+	<select id="getByRoleId" parameterType="Integer" resultType="String">
+		select 
+			premission 
+		from 
+			kytc_base_role_premission 
+		where 
+			roleId = #{roleId}
+	</select>
+	<select id="getRolePremission" parameterType="Integer" resultType="com.kytc.model.base.PremissionModel">
+		select 
+			p.project,
+			p.module,
+			p.menu,
+			p.operator,
+			p.premission,
+			dPr.name as projectName,
+  			dMo.name as moduleName,
+  			dMe.name as menuName,
+  			dOp.name as operateName 
+  		from 
+  			kytc_base_role_premission rp 
+  		LEFT JOIN 
+  			kytc_base_premission p 
+  		on 
+  			rp.premission = p.premission 
+  		LEFT JOIN 
+  			kytc_base_dictionary dPr
+		on
+			p.project = dPr.code 
+			and dPr.type = 'KYTC_PROJECT' 
+		left join 
+			kytc_base_dictionary dMo
+		on
+			p.module = dMo.code 
+			and dMo.type = 'KYTC_MODULE' 
+		left join 
+			kytc_base_dictionary dMe
+		on
+			p.menu = dMe.code 
+			and dMe.type = 'KYTC_MENU' 
+		left join 
+			kytc_base_dictionary dOp
+		on
+			p.operator = dOp.code 
+			and dOp.type = 'KYTC_OPERATOR' 
+		where 
+			rp.roleId = #{roleId}
+			ORDER BY 
+				dPr.sortNum ASC,
+				dMo.sortNum ASC,
+				dMe.sortNum ASC,
+				dOp.sortNum ASC
+	</select>
+</mapper>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.UserDao">
+	<insert id="add" parameterType="com.kytc.entity.base.UserEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO kytc_base_user(
+		    nickName,
+		    realName,
+		    sex,
+		    birthday,
+		    headPicture,
+		    departmentId,
+		    titleId,
+		    email,
+		    phone,
+		    idCard,
+		    remark,
+		    personalSign,
+		    isDelete,
+		    isLogin,
+		    createTime,
+		    lastUpdateTime,
+		    operatorId
+		)VALUES(
+			#{nickName},
+		    #{realName},
+		    #{sex},
+		    #{birthday},
+		    #{headPicture},
+		    #{departmentId},
+		    #{titleId},
+		    #{email},
+		    #{phone},
+		    #{idCard},
+		    #{remark},
+		    #{personalSign},
+		    0,
+		    0,
+		    CURRENT_TIMESTAMP(),
+		    CURRENT_TIMESTAMP(),
+		    #{operatorId}
+		)
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.UserEntity">
+		update 
+			kytc_base_user 
+		set 
+			nickName = #{nickName},
+			realName = #{realName},
+			sex = #{sex},
+			birthday = #{birthday},
+			headPicture = #{headPicture},
+			departmentId = #{departmentId},
+			titleId = #{titleId},
+			email = #{email},
+			phone = #{phone},
+			idCard = #{idCard},
+			remark = #{remark},
+			personalSign = #{personalSign},
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			operatorId = #{operatorId} 
+		where 
+			id = #{id}
+	</update>
+	<update id="delete" parameterType="com.kytc.entity.base.UserEntity">
+		update 
+			kytc_base_user
+		set 
+			isDelete = 1,
+			lastUpdateTime = CURRENT_TIMESTAMP(),
+			operatorId = #{operatorId}
+		where 
+			id = #{id}
+	</update>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		select 
+			count(1) 
+		from 
+			kytc_base_user 
+		where 
+			isDelete = 0 
+			<if test="departmentId!=null">
+				and departmentId = #{departmentId}
+			</if>
+			<if test="leaderId!=null">
+				and leaderId = #{leaderId}
+			</if>
+			<if test="nickName!=null">
+				and (nickName like concat("%",#{nickName},"%") 
+					or realName like concat("%",#{nickName},"%"))
+			</if>
+			<if test="id!=null">
+				and id = #{id}
+			</if>
+			<if test="sex!=null">
+				and sex = #{sex}
+			</if>
+			<if test="isLogin!=null">
+				and isLogin = #{isLogin}
+			</if>
+	</select>
+	<select id="list" parameterType="java.util.Map" resultType="com.kytc.model.base.UserModel">
+		select 
+			u.id,
+			nickName,
+		    realName,
+		    sex,
+		    birthday,
+		    departmentId,
+		    u.createTime,
+		    u.lastUpdateTime,
+		    d.shortName, 
+		    u.titleId,
+		    t.name as titleName 
+		from 
+			kytc_base_user u 
+		left join 
+			kytc_base_department d 
+		on 
+			u.departmentId = d.id 
+		left join 
+			kytc_base_title t
+		on 
+			u.titleId = t.id 
+		where 
+			u.isDelete = 0 
+			<if test="departmentId!=null">
+				and departmentId = #{departmentId}
+			</if>
+			<if test="nickName!=null">
+				and (nickName like concat("%",#{nickName},"%") 
+					or realName like concat("%",#{nickName},"%"))
+			</if>
+			<if test="sex!=null">
+				and sex = #{sex}
+			</if>
+			<if test="titleId!=null">
+				and titleId = #{titleId}
+			</if>
+			<if test="id!=null">
+				and u.id = #{id}
+			</if>
+			<if test="isLogin!=null">
+				and isLogin = #{isLogin}
+			</if>
+			<if test="sort!=null">
+				order by u.${sort} ${order} 
+			</if>
+			<if test="sort==null">
+				order by u.lastUpdateTime desc 
+			</if>
+			limit #{min},#{pageSize} 
+	</select>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.UserModel">
+		select 
+			u.*,
+			d.departmentName,
+			d.shortName,
+			u1.nickName operatorName,
+			t.name as titleName
+		from 
+			kytc_base_user u 
+		left join 
+			kytc_base_department d 
+		on 
+			u.departmentId = d.id 
+		left join 
+			kytc_base_title t
+		on 
+			u.titleId = t.id 
+		left join 
+			kytc_base_user u1
+		on
+			u.operatorId = u1.id
+		where 
+			u.id = #{id} 
+			limit 1  
+	</select>
+	<select id="getById" parameterType="Integer" resultType="com.kytc.entity.base.UserEntity">
+		select 
+			*
+		from 
+			kytc_base_user 
+		where 
+			id = #{id} 
+			limit 1  
+	</select>
+</mapper>

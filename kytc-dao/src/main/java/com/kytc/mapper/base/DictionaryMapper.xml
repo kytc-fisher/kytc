@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.kytc.dao.base.DictionaryDao">
+	<select id="list" parameterType="java.util.Map" resultType="com.kytc.model.base.DictionaryModel">
+		SELECT 
+			d.id,
+  			d.type,
+  			d.code,
+  			d.name,
+  			d.parentType,
+  			d.parentCode,
+  			d.createTime,
+  			d.sortNum,
+  			d.lastUpdateTime,
+  			dt1.name as typeName, 
+  			dt2.name as parentTypeName,
+  			d1.name as parentCodeName 
+		FROM 
+			kytc_base_dictionary d 
+		left join 
+			kytc_base_dictionary_type dt1
+		on 
+			d.type = dt1.code 
+		left join 
+			kytc_base_dictionary_type dt2 
+		on
+			d.parentType = dt2.code 
+		left join 
+			kytc_base_dictionary d1 
+		on 
+			d.parentType = d1.type 
+			and d.parentCode = d1.code 
+		where 
+			1 = 1 
+			and d.isDelete = 0 
+			<if test="type!=null and type!=''">
+				and d.type = #{type}
+			</if> 
+			<if test="name!=null and name!=''">
+				and d.name like concat("%",#{name},"%")
+			</if>
+			<if test="code!=null and code!=''">
+				and d.code = #{code}
+			</if>
+			<if test="parentType !=null and parentType!=''">
+				and d.parentType = #{parentType}
+			</if>
+			<if test="parentCode!=null and parentCode!=''">
+				and d.parentCode = #{parentCode}
+			</if>
+			<if test="id!=null and id!=''">
+				and d.id = #{id}
+			</if>
+			<if test="sort!=null and sort!=''">
+				order by d.${sort} ${order} 
+			</if>
+			<if test="sort==null or sort==''">
+				order by d.lastUpdateTime desc
+			</if>
+		LIMIT #{min},#{pageSize} 
+	</select>
+	<select id="count" parameterType="java.util.Map" resultType="Integer">
+		SELECT 
+			COUNT(1) 
+		FROM 
+			kytc_base_dictionary 
+		where 
+			1 = 1 
+			and isDelete = 0 
+			<if test="type!=null and type!=''">
+				and type = #{type}
+			</if> 
+			<if test="name!=null and name!=''">
+				and name like concat("%",#{name},"%")
+			</if>
+			<if test="code!=null and code!=''">
+				and code = #{code}
+			</if>
+			<if test="parentType !=null and parentType!=''">
+				and parentType = #{parentType}
+			</if>
+			<if test="parentCode!=null and parentCode!=''">
+				and parentCode = #{parentCode}
+			</if>
+			<if test="id!=null and id!=''">
+				and id = #{id}
+			</if>
+	</select>
+	<insert id="add" parameterType="com.kytc.entity.base.DictionaryEntity">
+		insert into kytc_base_dictionary(
+			type,
+			code,
+			name,
+			parentType,
+			parentCode,
+			sortNum,
+			remark,
+			isDelete,
+			operatorId,
+			createTime,
+			lastUpdateTime)
+		values(
+			#{type},
+			#{code},
+			#{name},
+			#{parentType},
+			#{parentCode},
+			#{sortNum},
+			#{remark},
+			0,
+			#{operatorId},
+			CURRENT_TIMESTAMP(),
+			CURRENT_TIMESTAMP())
+	</insert>
+	<update id="update" parameterType="com.kytc.entity.base.DictionaryEntity">
+		update 
+			kytc_base_dictionary 
+		set 
+			type = #{type},
+			code = #{code},
+			name = #{name},
+			parentType = #{parentType},
+			parentCode = #{parentCode},
+			sortNum = #{sortNum},
+			remark = #{remark},
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where id = #{id}
+	</update>
+	<select id="detail" parameterType="Integer" resultType="com.kytc.model.base.DictionaryModel">
+		SELECT 
+			d.id,
+  			d.type,
+  			d.code,
+  			d.name,
+  			d.parentType,
+  			d.parentCode,
+  			d.createTime,
+  			d.lastUpdateTime,
+  			dt1.name as typeName, 
+  			dt2.name as parentTypeName,
+  			d1.name as parentCodeName,
+  			d.operatorId,
+  			d.sortNum,
+  			d.remark,
+  			u.realName as operatorName
+		FROM 
+			kytc_base_dictionary d 
+		left join 
+			kytc_base_dictionary_type dt1
+		on 
+			d.type = dt1.code 
+		left join 
+			kytc_base_dictionary_type dt2 
+		on
+			d.parentType = dt2.code 
+		left join 
+			kytc_base_dictionary d1 
+		on 
+			d.parentType = d1.type 
+			and d.parentCode = d1.code 
+		left join 
+			kytc_base_user u
+		on 
+			d.operatorId = u.id
+		where 
+			1 = 1 
+			and d.isDelete = 0 
+			and d.id = #{id}
+	</select>
+	<update id="delete" parameterType = "com.kytc.entity.base.DictionaryEntity">
+		update
+			kytc_base_dictionary 
+		set 
+			isDelete = 1,
+			operatorId = #{operatorId},
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id}
+	</update>
+	<select id="getByTypeAndCode" parameterType="String" resultType="com.kytc.entity.base.DictionaryEntity">
+		select 
+			* 
+		from 
+			kytc_base_dictionary 
+		where 
+			type = #{type} 
+			and code = #{code}
+		limit 1
+	</select>
+	<select id="getByTypeAndName" parameterType="String" resultType="com.kytc.entity.base.DictionaryEntity">
+		select 
+			* 
+		from 
+			kytc_base_dictionary 
+		where 
+			type = #{type} 
+			and name = #{name}
+		limit 1
+	</select>
+	<select id="droplist1" parameterType="String" resultType="com.kytc.model.ComboboxModel">
+		select 
+			code as value,
+			name as text
+		from 
+			kytc_base_dictionary
+		where 
+			type = #{type} 
+			and isDelete = 0 
+		order by sortNum asc
+	</select>
+	<select id="droplist2" parameterType="String" resultType="com.kytc.model.ComboboxModel">
+		select 
+			code as value,
+			name as text
+		from 
+			kytc_base_dictionary
+		where 
+			type = #{type} 
+			and parentType = #{parentType} 
+			and parentCode = #{parentCode} 
+			and isDelete = 0 
+		order by sortNum asc
+	</select>
+	<update id="addUpdate" parameterType="com.kytc.entity.base.DictionaryEntity">
+		update 
+			kytc_base_dictionary 
+		set 
+			type = #{type},
+			code = #{code},
+			name = #{name},
+			parentType = #{parentType},
+			parentCode = #{parentCode},
+			sortNum = #{sortNum},
+			remark = #{remark},
+			operatorId = #{operatorId},
+			createTime = CURRENT_TIMESTAMP(),
+			isDelete = 0,
+			lastUpdateTime = CURRENT_TIMESTAMP() 
+		where 
+			id = #{id} 
+			and isDelete = 1
+	</update>
+	<select id="getById" parameterType="Integer" resultType="com.kytc.model.base.DictionaryModel">
+		select 
+			d.*,
+			dt.name as typeName 
+		from 
+			kytc_base_dictionary d
+		left join 
+			kytc_base_dictionary_type dt
+		on
+			d.type = dt.code 
+		where 
+			d.id = #{id} 
+			and d.isDelete = 0
+			limit 1
+	</select>
+</mapper>
